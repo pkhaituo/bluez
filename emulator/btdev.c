@@ -6401,7 +6401,9 @@ static int cmd_create_big_complete(struct btdev *dev, const void *data,
 	if (!pdu)
 		return -ENOMEM;
 
-	bis_handle = (uint16_t *)(pdu + sizeof(evt));
+	/* 修复对齐问题：使用临时指针计算位置，然后用memcpy */
+	uint8_t *bis_handle_pos = pdu + sizeof(evt);
+	bis_handle = (uint16_t *)bis_handle_pos;  // 保留原始指针用于后续操作
 
 	memset(&evt, 0, sizeof(evt));
 
@@ -6414,7 +6416,9 @@ static int cmd_create_big_complete(struct btdev *dev, const void *data,
 			goto done;
 		}
 
-		*bis_handle = cpu_to_le16(conn->handle);
+		/* 使用memcpy确保安全写入16位值 */
+		uint16_t handle_le = cpu_to_le16(conn->handle);
+		memcpy(bis_handle, &handle_le, sizeof(handle_le));
 		bis_handle++;
 	}
 
@@ -6436,6 +6440,7 @@ done:
 
 	return 0;
 }
+
 static int cmd_create_big_test(struct btdev *dev, const void *data, uint8_t len)
 {
 	/* TODO */
