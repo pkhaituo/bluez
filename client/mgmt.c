@@ -2350,7 +2350,7 @@ static uint8_t *str2bytearray(char *arg, uint8_t *val, long *val_len)
 		if (*entry == '\0')
 			continue;
 
-		if (i >= *val_len) {
+		if ((long)i >= *val_len){
 			bt_shell_printf("Too much data\n");
 			return NULL;
 		}
